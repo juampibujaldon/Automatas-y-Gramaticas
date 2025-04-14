@@ -20,6 +20,17 @@ print("Dado el string:", input_string, "el output esperado es:", output)
 
 
 # EJERCICIO N° 2
+def solve(expression: str) -> int:
+    terms = expression.split('+')
+    total = 0
+    for term in terms:
+        factors = term.strip().split('*')
+        product = 1
+        product = 1
+        for factor in factors:
+            product *= int(factor.strip())
+        total += product
+    return total
 
 # EJERCICIO N° 3
 
