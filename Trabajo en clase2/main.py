@@ -1,6 +1,12 @@
 import csv
 import os
 
+# with open('movies.csv', newline='', encoding='utf-8') as csvfile:
+#     reader = csv.reader(csvfile)
+#     # for row in reader:
+#     #     print(row)
+
+
 CSV_FILE = 'movies.csv'
 PLATFORMS = ['Netflix', 'Hulu', 'Prime Video', 'Disney+']
 CATEGORIES = ['7+', '13+', '16+', '18+', 'all']  
@@ -18,10 +24,10 @@ def save_movies(movies, fieldnames):
 
 def buscar_por_titulo(movies):
     texto = input("Ingrese parte del título: ").lower()
-    encontrados = [m for m in movies if texto in m['title'].lower()]
+    encontrados = [m for m in movies if texto in m['Title'].lower()]
     if encontrados:
         for m in encontrados:
-            print(f"{m['title']} ({m['platform']}, {m['category']}, Rating: {m['rating']})")
+            print(f"{m['Title']} ({m['platform']}, {m['category']}, Rating: {m['rating']})")
     else:
         print("No se encontraron películas.")
 
@@ -36,10 +42,14 @@ def buscar_por_plataforma_categoria(movies):
     if categoria not in CATEGORIES:
         print("Categoría inválida.")
         return
-    filtradas = [m for m in movies if m['platform'] == plataforma and m['category'] == categoria]
-    filtradas.sort(key=lambda x: float(x['rating']), reverse=True)
+    # Filtrar por plataforma (columna con valor '1') y categoría (columna 'Age')
+    filtradas = [m for m in movies if m.get(plataforma, '0') == '1' and m.get('Age', '') == categoria]
+    # Limpiar el rating para que sea solo el número antes del '/'
+    def get_rating(m):
+        return float(m['Rating'].split('/')[0]) if '/' in m['Rating'] else float(m['Rating'])
+    filtradas.sort(key=get_rating, reverse=True)
     for m in filtradas[:10]:
-        print(f"{m['title']} (Rating: {m['rating']})")
+        print(f"{m['Title']} (Rating: {m['Rating']})")
     if not filtradas:
         print("No se encontraron películas.")
 
@@ -76,7 +86,7 @@ def main():
         print(f"No se encontró el archivo {CSV_FILE}")
         return
     movies = load_movies()
-    fieldnames = movies[0].keys() if movies else ['title', 'platform', 'category', 'rating']
+    fieldnames = movies[0].keys() if movies else ['Title', 'platform', 'category', 'rating']
     while True:
         print("\nMenú:")
         print("1 - Buscar por título")
