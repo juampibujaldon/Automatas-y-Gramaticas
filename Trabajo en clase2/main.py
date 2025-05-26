@@ -23,35 +23,52 @@ def save_movies(movies, fieldnames):
         writer.writerows(movies)
 
 def buscar_por_titulo(movies):
-    texto = input("Ingrese parte del título: ").lower()
-    encontrados = [m for m in movies if texto in m['Title'].lower()]
+    texto = input("Ingrese parte del título: ").upper()
+    encontrados = [m for m in movies if texto in m['Title'].upper()]
     if encontrados:
         for m in encontrados:
-            print(f"{m['Title']} ({m['platform']}, {m['category']}, Rating: {m['rating']})")
+            plataformas = [p for p in PLATFORMS if m.get(p, '0') == '1']
+            print(f"{m['Title']} ({', '.join(plataformas)}, {m['Age']}, Rating: {m['Rating']})")
     else:
         print("No se encontraron películas.")
 
+
 def buscar_por_plataforma_categoria(movies):
     print("Plataformas disponibles:", ', '.join(PLATFORMS))
-    plataforma = input("Seleccione plataforma: ")
-    if plataforma not in PLATFORMS:
+
+    # hago el mapeo para soportar entrada flexible (ej: 'netflix', 'NETFLIX', 'Netflix')
+    plataformas_mapeadas = {p.lower(): p for p in PLATFORMS}
+
+    plataforma_input = input("Seleccione plataforma: ").strip().lower()
+
+    if plataforma_input not in plataformas_mapeadas:
         print("Plataforma inválida.")
         return
+
+    plataforma = plataformas_mapeadas[plataforma_input]
+
     print("Categorías disponibles:", ', '.join(CATEGORIES))
-    categoria = input("Seleccione categoría: ")
+    categoria = input("Seleccione categoría: ").strip()
     if categoria not in CATEGORIES:
         print("Categoría inválida.")
         return
-    # Filtrar por plataforma (columna con valor '1') y categoría (columna 'Age')
+
     filtradas = [m for m in movies if m.get(plataforma, '0') == '1' and m.get('Age', '') == categoria]
-    # Limpiar el rating para que sea solo el número antes del '/'
+
     def get_rating(m):
-        return float(m['Rating'].split('/')[0]) if '/' in m['Rating'] else float(m['Rating'])
+        try:
+            return float(m['Rating'].split('/')[0]) if '/' in m['Rating'] else float(m['Rating'])
+        except:
+            return 0
+
     filtradas.sort(key=get_rating, reverse=True)
-    for m in filtradas[:10]:
-        print(f"{m['Title']} (Rating: {m['Rating']})")
-    if not filtradas:
+
+    if filtradas:
+        for m in filtradas[:10]:
+            print(f"{m['Title']} (Rating: {m['Rating']})")
+    else:
         print("No se encontraron películas.")
+
 
 def insertar_pelicula(movies, fieldnames):
     nueva = {}
