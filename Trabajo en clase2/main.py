@@ -72,31 +72,45 @@ def buscar_por_plataforma_categoria(movies):
 
 def insertar_pelicula(movies, fieldnames):
     nueva = {}
-    for campo in fieldnames:
-        if campo == 'rating':
-            valor = input(f"Ingrese {campo} (0-100): ")
-            if valor not in RATINGS:
-                print("Error: rating inválido. Debe ser un número entre 0 y 100.")
-                return
-        elif campo == 'platform':
-            valor = input(f"Ingrese {campo} ({', '.join(PLATFORMS)}): ")
-            if valor not in PLATFORMS:
-                print("Error: plataforma inválida.")
-                return
-        elif campo == 'category':
-            valor = input(f"Ingrese {campo} ({', '.join(CATEGORIES)}): ")
-            if valor not in CATEGORIES:
-                print("Error: categoría inválida.")
-                return
+
+    title = input("Ingrese título de la película: ").strip()
+    if not title:
+        print("Error: el título no puede estar vacío.")
+        return
+    nueva['Title'] = title
+
+    print("Indique si la película está disponible en cada plataforma:")
+    for plataforma in PLATFORMS:
+        while True:
+            resp = input(f"¿Está en {plataforma}? (s/n): ").strip().lower()
+            if resp in ['s', 'si', 'sí']:
+                nueva[plataforma] = '1'
+                break
+            elif resp in ['n', 'no']:
+                nueva[plataforma] = '0'
+                break
+            else:
+                print("Respuesta inválida. Ingrese 's' para sí o 'n' para no.")
+
+    print("Categorías disponibles:", ', '.join(CATEGORIES))
+    categoria = input("Ingrese categoría: ").strip()
+    if categoria not in CATEGORIES:
+        print("Error: categoría inválida.")
+        return
+    nueva['Age'] = categoria
+
+    while True:
+        rating = input("Ingrese rating (0-100): ").strip()
+        if rating.isdigit() and 0 <= int(rating) <= 100:
+            nueva['Rating'] = f"{rating}/100"
+            break
         else:
-            valor = input(f"Ingrese {campo}: ")
-            if not valor:
-                print(f"Error: {campo} no puede estar vacío.")
-                return
-        nueva[campo] = valor
+            print("Error: rating inválido. Debe ser un número entre 0 y 100.")
+
     movies.append(nueva)
     save_movies(movies, fieldnames)
     print("Película agregada correctamente.")
+
 
 def main():
     if not os.path.exists(CSV_FILE):
