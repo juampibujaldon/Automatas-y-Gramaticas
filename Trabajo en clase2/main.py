@@ -100,6 +100,14 @@ def insertar_pelicula(movies, fieldnames):
     nueva['Age'] = categoria
 
     while True:
+        year = input("Ingrese el año de la película (ej: 2020): ").strip()
+        if year.isdigit() and 1800 <= int(year) <= 2100:
+            nueva['Year'] = year
+            break
+        else:
+            print("Error: ingrese un año válido entre 1800 y 2100.")
+
+    while True:
         rating = input("Ingrese rating (0-100): ").strip()
         if rating.isdigit() and 0 <= int(rating) <= 100:
             nueva['Rating'] = f"{rating}/100"
