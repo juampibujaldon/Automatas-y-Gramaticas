@@ -134,7 +134,6 @@ def insertar_desde_archivo():
                 print("Likes y Views deben ser números.")
                 continue
 
-            # # Validamos con regex que las URLs y URI tengan el formato correcto según Spotify/YouTube
             regex_uri = re.compile(r"^spotify:track:[\w]{22}$")
             regex_url_spotify = re.compile(r"^https?://open\.spotify\.com/track/[\w]{22}$")
             regex_url_youtube = re.compile(r"^https?://(?:www\.)?(youtube\.com/watch\?v=|youtu\.be/)[\w-]{11}$")
