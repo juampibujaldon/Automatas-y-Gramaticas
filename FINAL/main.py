@@ -1,4 +1,3 @@
-
 import csv
 import re
 import os
@@ -204,16 +203,3 @@ def menu():
 
 if __name__ == "__main__":
     menu()
-
-
-
-
-#!!!!   Justificación de herramientas:
-
-    # # csv: para manipular archivos .csv de forma estructurada.
-
-    # # re (expresiones regulares): para búsquedas parciales e insensibles a mayúsculas/minúsculas, y validación de entradas.
-
-    # # datetime.timedelta: para convertir duración en milisegundos a formato HH:MM:SS.
-
-    # # os.path.exists: para validar la existencia de archivos al insertar registros desde un archivo externo.
