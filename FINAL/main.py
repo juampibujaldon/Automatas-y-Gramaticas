@@ -31,9 +31,9 @@ def buscar_titulo_o_artista(datos):
     texto = input("Ingrese parte del título o artista: ").strip()
     patron = re.compile(re.escape(texto), re.IGNORECASE)
     resultados = [d for d in datos if patron.search(d['Artist']) or patron.search(d['Track'])]
-    resultados_ordenados = sorted(resultados, key=lambda x: float(x.get('Stream', 0)), reverse=True)
+    # resultados_ordenados = sorted(resultados, key=lambda x: float(x.get('Stream', 0)), reverse=True)
     print("\nResultados:")
-    for r in resultados_ordenados:
+    for r in resultados:
         print(f"{r['Artist']} - {r['Track']} - {ms_to_hms(r['Duration_ms'])}")
 
 def top10_artista(datos):
@@ -50,7 +50,7 @@ def insertar_registro():
     entrada = {col: "" for col in COLUMNAS_CSV}
 
     regex_uri = re.compile(r"^spotify:track:[\w]{22}$")
-    regex_url_spotify = re.compile(r"^https?://open\.spotify\.com/track/[\w]{22}$")
+    regex_url_spotify = re.compile(r"^https?://open\.spotify\.com/(track|artist)/[\w]{22}$")
     regex_url_youtube = re.compile(r"^https?://(?:www\.)?(youtube\.com/watch\?v=|youtu\.be/)[\w-]{11}$")
 
     for campo in campos_personalizados:
@@ -135,7 +135,7 @@ def insertar_desde_archivo():
                 continue
 
             regex_uri = re.compile(r"^spotify:track:[\w]{22}$")
-            regex_url_spotify = re.compile(r"^https?://open\.spotify\.com/track/[\w]{22}$")
+            regex_url_spotify = re.compile(r"^https?://open\.spotify\.com/track/[\w]{22}/?$")
             regex_url_youtube = re.compile(r"^https?://(?:www\.)?(youtube\.com/watch\?v=|youtu\.be/)[\w-]{11}$")
 
             if row.get("Uri") and not regex_uri.match(row["Uri"]):
@@ -202,3 +202,6 @@ def menu():
 
 if __name__ == "__main__":
     menu()
+
+#revisar linea 34 a 36
+#pedir que la uri sea un obligatoria
