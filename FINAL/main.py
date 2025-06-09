@@ -29,28 +29,33 @@ def cargar_datos(nombre_archivo="spotify_and_youtube.csv"):
 
 def buscar_titulo_o_artista(datos):
     texto = input("Ingrese parte del título o artista: ").strip()
+    if not texto:
+        print("\u26a0 No se ingresó texto.")
+        return
     patron = re.compile(re.escape(texto), re.IGNORECASE)
     resultados = [d for d in datos if patron.search(d['Artist']) or patron.search(d['Track'])]
-    # resultados_ordenados = sorted(resultados, key=lambda x: float(x.get('Stream', 0)), reverse=True)
+    resultados_ordenados = sorted(resultados, key=lambda x: float(x.get('Stream') or 0), reverse=True)
     print("\nResultados:")
-    for r in resultados:
-        print(f"{r['Artist']} - {r['Track']} - {ms_to_hms(r['Duration_ms'])}")
+    for r in resultados_ordenados:
+        duracion = ms_to_hms(round(float(r['Duration_ms'])))
+        print(f"{r['Artist']} - {r['Track']} - {duracion}")
 
 def top10_artista(datos):
     artista = input("Ingrese el nombre del artista: ").strip()
     patron = re.compile(re.escape(artista), re.IGNORECASE)
     canciones = [d for d in datos if patron.search(d['Artist'])]
-    canciones_ordenadas = sorted(canciones, key=lambda x: float(x.get('Stream', 0)), reverse=True)[:10]
+    canciones_ordenadas = sorted(canciones, key=lambda x: float(x.get('Stream') or 0), reverse=True)[:10]
     for c in canciones_ordenadas:
-        rep_millones = float(c.get('Stream', 0)) / 1_000_000
-        print(f"{c['Artist']} - {c['Track']} - {ms_to_hms(c['Duration_ms'])} - {rep_millones:.2f}M reproducciones")
+        rep_millones = float(c.get('Stream') or 0) / 1_000_000
+        duracion = ms_to_hms(round(float(c['Duration_ms'])))
+        print(f"{c['Artist']} - {c['Track']} - {duracion} - {rep_millones:.2f}M reproducciones")
 
 def insertar_registro():
     campos_personalizados = ['Artist', 'Track', 'Album', 'Uri', 'Duration_ms', 'Url_spotify', 'Url_youtube', 'Likes', 'Views', 'Stream']
     entrada = {col: "" for col in COLUMNAS_CSV}
 
     regex_uri = re.compile(r"^spotify:track:[\w]{22}$")
-    regex_url_spotify = re.compile(r"^https?://open\.spotify\.com/(track|artist)/[\w]{22}$")
+    regex_url_spotify = re.compile(r"^https?://open\.spotify\.com/(track|artist)/[\w]{22}/?$")
     regex_url_youtube = re.compile(r"^https?://(?:www\.)?(youtube\.com/watch\?v=|youtu\.be/)[\w-]{11}$")
 
     for campo in campos_personalizados:
@@ -78,9 +83,10 @@ def insertar_registro():
             else:
                 valor = input(f"{campo}: ").strip()
 
-                if campo == 'Uri' and not regex_uri.match(valor):
-                    print("URI de Spotify inválida.")
-                    continue
+                if campo == 'Uri':
+                    if not valor or not regex_uri.match(valor):
+                        print("URI de Spotify es obligatoria y debe tener formato válido.")
+                        continue
                 elif campo == 'Url_spotify':
                     valor = limpiar_url_spotify(valor)
                     if not regex_url_spotify.match(valor):
@@ -110,7 +116,6 @@ def insertar_registro():
         escritor.writerow(entrada)
     print("Registro insertado correctamente.")
 
-
 def insertar_desde_archivo():
     archivo = input("Ingrese el nombre del archivo CSV: ").strip()
     if not os.path.exists(archivo):
@@ -121,11 +126,9 @@ def insertar_desde_archivo():
         lector = csv.DictReader(f)
         nuevos = []
         for row in lector:
-            # Normalizar URLs
             row['Url_spotify'] = limpiar_url_spotify(row.get('Url_spotify', ''))
             row['Url_youtube'] = limpiar_url_youtube(row.get('Url_youtube', ''))
 
-            # Validaciones
             try:
                 if int(row.get('Likes', 0)) > int(row.get('Views', 0)):
                     print("Likes no puede ser mayor que Views.")
@@ -135,11 +138,11 @@ def insertar_desde_archivo():
                 continue
 
             regex_uri = re.compile(r"^spotify:track:[\w]{22}$")
-            regex_url_spotify = re.compile(r"^https?://open\.spotify\.com/track/[\w]{22}/?$")
+            regex_url_spotify = re.compile(r"^https?://open\.spotify\.com/(track|artist)/[\w]{22}/?$")
             regex_url_youtube = re.compile(r"^https?://(?:www\.)?(youtube\.com/watch\?v=|youtu\.be/)[\w-]{11}$")
 
-            if row.get("Uri") and not regex_uri.match(row["Uri"]):
-                print("URI inválida.")
+            if not row.get("Uri") or not regex_uri.match(row["Uri"]):
+                print("URI inválida o faltante.")
                 continue
             if row.get("Url_spotify") and not regex_url_spotify.match(row["Url_spotify"]):
                 print("URL de Spotify inválida.")
@@ -158,7 +161,6 @@ def insertar_desde_archivo():
             escritor.writerows(nuevos)
         print(f"{len(nuevos)} registros insertados correctamente.")
 
-
 def mostrar_albums(datos):
     artista = input("Nombre del artista: ").strip()
     patron = re.compile(re.escape(artista), re.IGNORECASE)
@@ -166,7 +168,7 @@ def mostrar_albums(datos):
     for d in datos:
         if patron.search(d['Artist']):
             alb = d['Album']
-            dur = float(d['Duration_ms'])
+            dur = round(float(d['Duration_ms']))
             albums.setdefault(alb, {'canciones': 0, 'duracion': 0})
             albums[alb]['canciones'] += 1
             albums[alb]['duracion'] += dur
